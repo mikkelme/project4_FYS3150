@@ -5,58 +5,60 @@
 using namespace std;
 using namespace arma;
 
+ofstream ofile;
+// #include <cmath>
+// #include <iostream>
+// #include <fstream>
+// #include <iomanip>
+// #include <cstdlib>
+// #include <random>
+// #include <armadillo>
+// #include <string>
+
+
+
 //J = 1; k = 1
-
-
-
-
 int main(int argc, char* argv[]){
   Functions func;
 
+  string fileout;
+  int NSpins, MCcycles;
+  double InitialTemp, FinalTemp, TempStep;
+  if (argc <= 5) {
+    cout << "Bad Usage: " << argv[0] <<
+      " reads: Output filename, number of spins, MC cycles, initial and final temperature and tempurate step" << endl;
+    exit(1);
+  }
 
-  //Read initial values
-  //2 x 2 case:
+  fileout=argv[1];
+  NSpins = atoi(argv[2]);
+  MCcycles = atoi(argv[3]);
+  InitialTemp = atof(argv[4]);
+  FinalTemp = atof(argv[5]);
+  TempStep = atof(argv[6]);
 
-
-
-  double temp = 1;
-  int L = 2;
-
-
-  mat spin_matrix = zeros<mat>(L + 2, L + 2); //include space for boundary condidtions
-  double E = 0; double M = 0;
-  func.Initialize(spin_matrix, temp, E, M);
-  // func.ShowMatrix(spin_matrix);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  //---Metropolis using Mersienne RNG (twister)-----//
-  //Initialize the seed and call the Mersienne algo
-  vec w = zeros<vec>(17);
-  for (int de = -8; de <= 8; de+=4) w[de+8] = exp(-de/temp);
-
-  func.Metropolis(spin_matrix, L, w, E, M);
-  func.ShowMatrix(spin_matrix);
+  // Declare new file name and add lattice size to file name
+  string argument = to_string(NSpins);
+  fileout.append(argument + "x" + argument);
+  ofile.open(fileout);
+  ofile << setw(15) << setprecision(8) << "Temp";
+  ofile << setw(15) << setprecision(8) << "E";
+  ofile << setw(15) << setprecision(8) << "E_var";
+  ofile << setw(15) << setprecision(8) << "M";
+  ofile << setw(15) << setprecision(8) << "M_var";
+  ofile << setw(15) << setprecision(8) << "M_abs" << endl;
 
 
 
 
+  for (double Temp = InitialTemp; Temp <= FinalTemp; Temp+=TempStep){
+    vec ExpectationValues = zeros<mat>(5);
+    func.MetropolisSampling(NSpins, MCcycles, Temp, ExpectationValues);
+    func.output(NSpins, MCcycles, Temp, ExpectationValues, ofile);
+  }
 
-  //Run Monte Carlo computation
-  //for (int cycles = 1; cycles <= mcs; cycles++){
-    //Metropolis
-    //update expectation values
+
+
 
 
 
