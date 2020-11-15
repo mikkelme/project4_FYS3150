@@ -1,6 +1,6 @@
 #include "functions.h"
 
-
+#include <iostream>
 
 
 
@@ -31,9 +31,6 @@ void Functions::Initialize(mat &A, double &Temp, double &E, double &M){
       else { // Set spins randomly up er down
         A(i,j) =(int)(RandomNumberGenerator(gen)*2) * 2 - 1;
       }
-      // Compute energy and magnetization
-        E += -A(i,j)*(A(i,j+1) + A(i+1,j));
-        M += A(i,j);
     }
   }
 
@@ -44,11 +41,31 @@ void Functions::Initialize(mat &A, double &Temp, double &E, double &M){
     A(0,k)    = A(n-2,k);
     A(n-1,k)  = A(1, k);
   }
+
+
+  // Compute energy and magnetization
+  for (int i = 1; i < n-1; i++){
+    for (int j = 1; j < n-1; j++){
+    E += -A(i,j)*(A(i,j+1) + A(i+1,j));
+    M += A(i,j);
+    }
+  }
 }
 
 
 
-void Functions::MetropolisSampling(int NSpins, int MCcycles, double Temp, vec &ExpectationValues){
+void Functions::MetropolisSampling(int NSpins, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, bool WriteLog){
+  ofstream ofile;
+  if (WriteLog || Temp == InitialTemp){
+    ofile.open("Metropolis_log");
+    ofile << setw(15) << setprecision(8) << "cycles";
+    ofile << setw(15) << setprecision(8) << "E";
+    ofile << setw(15) << setprecision(8) << "M" << endl;
+  }
+
+
+
+
   // Initialize spin matrix, energy and magnetization
   mat spin_matrix = zeros<mat>(NSpins + 2, NSpins + 2);
   double E = 0; double M = 0;
@@ -88,7 +105,6 @@ void Functions::MetropolisSampling(int NSpins, int MCcycles, double Temp, vec &E
         // Update energy and magnetization
         E += (double) deltaE;
         M += (double) 2*spin_matrix(iy,ix);
-
       }
     }
     // update expectation values for local node
@@ -97,6 +113,13 @@ void Functions::MetropolisSampling(int NSpins, int MCcycles, double Temp, vec &E
     ExpectationValues(2) += M;
     ExpectationValues(3) += M*M;
     ExpectationValues(4) += fabs(M);
+
+    if (WriteLog || Temp == InitialTemp){
+      ofile << setw(15) << setprecision(8) << cycles;
+      ofile << setw(15) << setprecision(8) << E/NSpins/NSpins;
+      ofile << setw(15) << setprecision(8) << M/NSpins/NSpins << endl;
+    }
+
   }
 } // end of Metropolis sampling over spins
 

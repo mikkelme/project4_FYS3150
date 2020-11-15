@@ -43,17 +43,16 @@ int main(int argc, char* argv[]){
   ofile.open(fileout);
   ofile << setw(15) << setprecision(8) << "Temp";
   ofile << setw(15) << setprecision(8) << "E";
-  ofile << setw(15) << setprecision(8) << "E_var";
+  ofile << setw(15) << setprecision(8) << "C_V";
   ofile << setw(15) << setprecision(8) << "M";
-  ofile << setw(15) << setprecision(8) << "M_var";
+  ofile << setw(15) << setprecision(8) << "Susceptibility";
   ofile << setw(15) << setprecision(8) << "M_abs" << endl;
 
 
-
-
+  bool WriteLog = false;
   for (double Temp = InitialTemp; Temp <= FinalTemp; Temp+=TempStep){
     vec ExpectationValues = zeros<mat>(5);
-    func.MetropolisSampling(NSpins, MCcycles, Temp, ExpectationValues);
+    func.MetropolisSampling(NSpins, MCcycles, Temp, ExpectationValues, InitialTemp, WriteLog);
     func.output(NSpins, MCcycles, Temp, ExpectationValues, ofile);
   }
 
