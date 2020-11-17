@@ -56,15 +56,17 @@ void Functions::Initialize(mat &A, double &Temp, double &E, double &M){
 
 void Functions::MetropolisSampling(int NSpins, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, bool WriteLog){
   ofstream ofile;
+
   if (WriteLog || Temp == InitialTemp){
-    ofile.open("Metropolis_log");
+    ofile.open("Sampling_log");
+    ofile << "#Info_len = 3\n#MCcycles " << MCcycles << "\n#Nspins = " << NSpins << "\n#Temp = " << Temp << endl;
     ofile << setw(15) << setprecision(8) << "cycles";
     ofile << setw(15) << setprecision(8) << "E";
-    ofile << setw(15) << setprecision(8) << "M" << endl;
+    ofile << setw(15) << setprecision(8) << "E_var";
+    ofile << setw(15) << setprecision(8) << "M";
+    ofile << setw(15) << setprecision(8) << "M_var";
+    ofile << setw(15) << setprecision(8) << "M_abs" << endl;
   }
-
-
-
 
   // Initialize spin matrix, energy and magnetization
   mat spin_matrix = zeros<mat>(NSpins + 2, NSpins + 2);
@@ -115,9 +117,22 @@ void Functions::MetropolisSampling(int NSpins, int MCcycles, double Temp, vec &E
     ExpectationValues(4) += fabs(M);
 
     if (WriteLog || Temp == InitialTemp){
+      double norm = 1.0/((double) (cycles));  // divided by  number of cycles
+      double E = ExpectationValues(0)*norm;
+      double EE = ExpectationValues(1)*norm;
+      double M = ExpectationValues(2)*norm;
+      double MM = ExpectationValues(3)*norm;
+      double M_abs = ExpectationValues(4)*norm;
+      // all expectation values are per spin, divide by 1/NSpins/NSpins
+      double E_var = (EE- E*E)/NSpins/NSpins;
+      double M_var = (MM - M_abs*M_abs)/NSpins/NSpins;
+      ofile << setiosflags(ios::showpoint | ios::uppercase);
       ofile << setw(15) << setprecision(8) << cycles;
       ofile << setw(15) << setprecision(8) << E/NSpins/NSpins;
-      ofile << setw(15) << setprecision(8) << M/NSpins/NSpins << endl;
+      ofile << setw(15) << setprecision(8) << E_var/Temp/Temp;
+      ofile << setw(15) << setprecision(8) << M/NSpins/NSpins;
+      ofile << setw(15) << setprecision(8) << M_var/Temp;
+      ofile << setw(15) << setprecision(8) << M_abs/NSpins/NSpins << endl;
     }
 
   }

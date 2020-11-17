@@ -4,18 +4,13 @@ import matplotlib.pyplot as plt
 def read_log(filename):
     data = []
     with open(filename, "r") as infile:
+        Info_len = int(infile.readline().split()[-1])
+        Info = [int(infile.readline().split()[-1]) for i in range(Info_len)]
         variables = infile.readline().split()
-        for line in infile:
-            data.append(np.array(line.split()).astype(float))
-        data = np.array(data)
-        cycles, E, M = data[:,0], data[:,1], data[:,2]
+        data = np.zeros((Info[0], len(variables)))
+        for i in range(Info[0]):
+            data[i] = infile.readline().split()
+        # Cycles, E, C_V, M, Chi, M_abs = data[:,0], data[:,1], data[:,2], data[:,3], data[:,4], data[:,5]
+        # MCcycles, Nspins, Temp = Info
 
-    return cycles, E, M
-
-
-filename = "Metropolis_log"
-cycles, E, M = read_log(filename)
-plt.plot(cycles, E, label = "E")
-plt.plot(cycles, M, label = "M")
-plt.legend()
-plt.show()
+    return Info, data

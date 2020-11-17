@@ -49,7 +49,7 @@ int main(int argc, char* argv[]){
   ofile << setw(15) << setprecision(8) << "M_abs" << endl;
 
 
-  bool WriteLog = false;
+  bool WriteLog = true;
   for (double Temp = InitialTemp; Temp <= FinalTemp; Temp+=TempStep){
     vec ExpectationValues = zeros<mat>(5);
     func.MetropolisSampling(NSpins, MCcycles, Temp, ExpectationValues, InitialTemp, WriteLog);
