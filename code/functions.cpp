@@ -58,7 +58,7 @@ void Functions::MetropolisSampling(int NSpins, int MCcycles, double Temp, vec &E
   ofstream ofile;
 
   if (WriteLog || Temp == InitialTemp){
-    ofile.open("Sampling_log");
+    ofile.open("Sampling_log.data");
     ofile << "#Info_len = 3\n#MCcycles " << MCcycles << "\n#Nspins = " << NSpins << "\n#Temp = " << Temp << endl;
     ofile << setw(15) << setprecision(8) << "cycles";
     ofile << setw(15) << setprecision(8) << "E";

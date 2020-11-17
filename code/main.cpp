@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
 
   // Declare new file name and add lattice size to file name
   string argument = to_string(NSpins);
-  fileout.append(argument + "x" + argument);
+  fileout.append(argument + "x" + argument + ".data");
   ofile.open(fileout);
   ofile << setw(15) << setprecision(8) << "Temp";
   ofile << setw(15) << setprecision(8) << "E";

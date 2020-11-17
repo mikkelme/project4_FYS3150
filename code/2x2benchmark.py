@@ -65,10 +65,8 @@ def benchmark(Info, data):
 
 
 
-
-
 if __name__ == "__main__":
 
-    filename = "Sampling_log"
+    filename = "Sampling_log.data"
     Info, data = read_log(filename)
     benchmark(Info, data)

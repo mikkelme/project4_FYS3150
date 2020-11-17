@@ -1,0 +1,25 @@
+#Compiled files
+#*.exe
+*.o
+
+#Latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
+*.out
+*.toc
+
+#Text files including run data
+*.txt
+*.data
+
+#Mac files
+*.DS_Store
+
+#Big arrays
+*.npy
+
+#Folders
+__pycache__/

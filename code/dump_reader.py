@@ -46,6 +46,6 @@ def plot_results(Temp, E, C_v, M, Chi, M_abs):
 
 
 if __name__ == "__main__":
-    filename = "test_run20x20"
+    filename = "test_run2x2.data"
     Temp, E, C_V, M, Chi, M_abs = read_file(filename)
     plot_results(Temp, E, C_V, M, Chi, M_abs)
