@@ -1,4 +1,4 @@
-CPPflags = c++ #-O3 -std=c++11
+CPPflags = c++ -std=c++11 #-O3 
 LIB =  -larmadillo #-llapack -lblas
 PROG = main
 

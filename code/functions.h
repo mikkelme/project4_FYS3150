@@ -11,9 +11,13 @@ class Functions
 {
 public:
   void ShowMatrix(mat &A);
-  void Initialize(mat &A, double &temp, double &E, double &M);
-  void MetropolisSampling(int L, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, bool WriteLog);
+  void DefaultConfig(mat &A, double &Temp);
+  void BoundaryConditions(mat &A);
+  void Compute_E_and_M(mat &A, double &E, double &M);
+  void MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, bool WriteLog, string fileout);
   void output(int NSpins, int MCcycles, double Temp, vec ExpectationValues, ofstream& ofile);
+  void LoadConfig(mat &spin_matrix, string filename);
+  void SaveConfig(mat &spin_matrix, string fileout);
 
 
 private:
