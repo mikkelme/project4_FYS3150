@@ -25,15 +25,13 @@ void Functions::DefaultConfig(mat &A, double &Temp){
   random_device rd;
   mt19937_64 gen(rd());
   uniform_real_distribution<double> RandomNumberGenerator(0.0, 1.0);
-
-
-  for (int i = 1; i < n-1; i++){
-    for (int j = 1; j < n-1; j++){
-      if (Temp < 1.5){ // Set all spins to up = 1
-        A(i,j) = 1;
+  for (int j = 1; j < n-1; j++){
+    for (int i = 1; i < n-1; i++){
+      if (Temp > 10){ // Set all spins to up = 1
+        A(j,i) = 1;
       }
       else { // Set spins randomly up er down
-        A(i,j) =(int)(RandomNumberGenerator(gen)*2) * 2 - 1;
+        A(j,i) =(int)(RandomNumberGenerator(gen)*2) * 2 - 1;
       }
     }
   }
@@ -55,22 +53,20 @@ void Functions::BoundaryConditions(mat &A){
 
 void Functions::Compute_E_and_M(mat &A, double &E, double &M){
   // Compute energy and magnetization
-  int n = size(A)[0] - 2;
-  for (int i = 1; i < n-1; i++){
-    for (int j = 1; j < n-1; j++){
-    E += -A(i,j)*(A(i,j+1) + A(i+1,j));
-    M += A(i,j);
+  int n = size(A)[0];
+  for (int j = 1; j < n-1; j++){
+    for (int i = 1; i < n-1; i++){
+      E += -A(j,i)*(A(j,i+1) + A(j+1,i));
+      M += A(j,i);
     }
   }
 }
 
 
-
 void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, bool WriteLog, string fileout){
   ofstream ofile;
+
   int NSpins = size(spin_matrix)[0] - 2;
-
-
   if (WriteLog || Temp == InitialTemp){
     string argument = to_string(NSpins);
     ofile.open(fileout + argument + "x" + argument + "_log.txt");
@@ -98,6 +94,7 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
   mt19937_64 gen(rd());
   uniform_real_distribution<double> RandomNumberGenerator(0.0, 1.0);
 
+  int accepted_flips = 0;
   // Perform Metropolis sampling
   for (int cycles = 1; cycles <= MCcycles; cycles++){
     //Sweap over lattice for NSpins^2 random positions
@@ -113,6 +110,7 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
       //Metropolis test
       if (RandomNumberGenerator(gen) <= EnergyDifference[deltaE+8]) {
         spin_matrix(iy,ix) *= -1; // Accept new config by flipping spin
+        accepted_flips += 1;
 
         // Update boundary conditions (ghost spin)
         spin_matrix(0,ix) = spin_matrix(NSpins,ix);
@@ -132,6 +130,7 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
     ExpectationValues(3) += M*M;
     ExpectationValues(4) += fabs(M);
 
+
     if (WriteLog || Temp == InitialTemp){
       double norm = 1.0/((double) (cycles));  // divided by  number of cycles
       double E = ExpectationValues(0)*norm;
@@ -146,13 +145,12 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
       ofile << setw(15) << setprecision(8) << MM;
       ofile << setw(15) << setprecision(8) << M_abs << endl;
     }
-
   }
+  WriteAcceptedFlips(accepted_flips, Temp, MCcycles, NSpins, fileout);
 } // end of Metropolis sampling over spins
 
 
-
-void Functions::output(int NSpins, int MCcycles, double Temp, vec ExpectationValues, ofstream& ofile){
+void Functions::output(int MCcycles, double Temp, vec ExpectationValues, ofstream& ofile){
   double norm = 1.0/((double) (MCcycles));  // divided by  number of cycles
   double E = ExpectationValues(0)*norm;
   double EE = ExpectationValues(1)*norm;
@@ -165,8 +163,17 @@ void Functions::output(int NSpins, int MCcycles, double Temp, vec ExpectationVal
   ofile << setw(15) << setprecision(8) << M;
   ofile << setw(15) << setprecision(8) << MM;
   ofile << setw(15) << setprecision(8) << M_abs << endl;
-
 } // end output function
+
+
+void Functions::WriteAcceptedFlips(int accepted_flips, double Temp, int MCcycles, int NSpins ,string fileout){
+  ofstream outflip;
+  string output_file = fileout + "_flipped.txt";
+  outflip.open(output_file, ios::out | ios::app);
+  outflip << setw(15) << setprecision(8) << Temp;
+  outflip << setw(15) << setprecision(8) << float(accepted_flips)/MCcycles/NSpins/NSpins << endl;
+  outflip.close();
+}
 
 
 void Functions::LoadConfig(mat &A, string filename){
@@ -174,12 +181,12 @@ void Functions::LoadConfig(mat &A, string filename){
   ifstream infile (filename);
 
 
-  int NSpins = size(A)[0] - 2;
-  for (int j = 1; j < NSpins + 1; j++){
+  int n = size(A)[0];
+  for (int j = 1; j < n-1; j++){
     getline(infile, line);
     istringstream iss (line);
     vector<string> results(istream_iterator<string>{iss}, istream_iterator<string>());
-    for (int i = 1; i < NSpins + 1; i++){
+    for (int i = 1; i < n-1; i++){
       A(j,i) = stoi(results[i-1]);
     }
   }
@@ -190,11 +197,11 @@ void Functions::LoadConfig(mat &A, string filename){
 
 void Functions::SaveConfig(mat &A, string fileout){
   ofstream ofile;
-  int NSpins = size(A)[0] - 2;
-  string argument = to_string(NSpins);
+  int n = size(A)[0];
+  string argument = to_string(n-2);
   ofile.open(fileout + argument + "x" + argument + "_config.txt");
-  for (int j = 1; j < NSpins + 1; j++){
-    for (int i = 1; i < NSpins + 1; i++){
+  for (int j = 1; j < n-1; j++){
+    for (int i = 1; i < n-1; i++){
       ofile << setw(2) << A(j,i);
     }
     ofile << endl;

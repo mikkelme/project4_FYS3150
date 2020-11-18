@@ -6,15 +6,6 @@ using namespace std;
 using namespace arma;
 
 ofstream ofile;
-// #include <cmath>
-// #include <iostream>
-// #include <fstream>
-// #include <iomanip>
-// #include <cstdlib>
-// #include <random>
-// #include <armadillo>
-// #include <string>
-
 
 
 //J = 1; k = 1
@@ -43,7 +34,6 @@ int main(int argc, char* argv[]){
     }
   }
 
-
   // Declare new file name and add lattice size to file name
   string argument = to_string(NSpins);
   ofile.open(fileout + argument + "x" + argument + "_dump.txt");
@@ -55,7 +45,6 @@ int main(int argc, char* argv[]){
   ofile << setw(15) << setprecision(8) << "M_abs" << endl;
 
 
-
   // Initialize spin matrix
   mat spin_matrix = zeros<mat>(NSpins + 2, NSpins + 2);
   func.DefaultConfig(spin_matrix, InitialTemp);
@@ -65,13 +54,14 @@ int main(int argc, char* argv[]){
   // func.LoadConfig(spin_matrix, filename);
 
 
+  //
+
   for (double Temp = InitialTemp; Temp <= FinalTemp; Temp+=TempStep){
     vec ExpectationValues = zeros<mat>(5);
     func.MetropolisSampling(spin_matrix, MCcycles, Temp, ExpectationValues, InitialTemp, WriteLog, fileout);
-    func.output(NSpins, MCcycles, Temp, ExpectationValues, ofile);
+    func.output(MCcycles, Temp, ExpectationValues, ofile);
   }
-  func.SaveConfig(spin_matrix, fileout);
-  func.ShowMatrix(spin_matrix);
+  // func.SaveConfig(spin_matrix, fileout);
 
 
 

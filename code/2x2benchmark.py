@@ -85,7 +85,7 @@ def equlibrium_benchmark(Info, data):
 
     plt.tight_layout(pad=1.1, w_pad=0.7, h_pad=0.2)
     plt.legend(loc = "best", fontsize = 13)
-    #plt.savefig("../article/figures/equilibrium_benchmark.pdf", bbox_inches="tight")
+    plt.savefig("../article/figures/equilibrium_benchmark.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -141,13 +141,13 @@ def phase_benchmark(Temp, E, EE, M, MM, M_abs):
 
 if __name__ == "__main__":
 
-    filename = "benchmark2x2_log.txt"
+    filename = "bm2x2_log.txt"
     Info, data = read_log(filename)
     equlibrium_benchmark(Info, data)
 
-    # filename = "benchmark2x2_dump.txt"
-    # Temp, E, EE, M, MM, M_abs = read_dump(filename)
-    # phase_benchmark(Temp, E, EE, M, MM, M_abs)
+    filename = "bm2x2_dump.txt"
+    Temp, E, EE, M, MM, M_abs = read_dump(filename)
+    phase_benchmark(Temp, E, EE, M, MM, M_abs)
 
 
 
