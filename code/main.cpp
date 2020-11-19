@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
   FinalTemp = atof(argv[5]);
   TempStep = atof(argv[6]);
   bool WriteLog = false;
-  if (argc >= 6) {
+  if (argc >= 8) {
     if (string(argv[7]) == "log") {
       WriteLog = true;
     }
@@ -55,6 +55,7 @@ int main(int argc, char* argv[]){
 
 
   //
+
 
   for (double Temp = InitialTemp; Temp <= FinalTemp; Temp+=TempStep){
     vec ExpectationValues = zeros<mat>(5);

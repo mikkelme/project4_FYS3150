@@ -1,5 +1,4 @@
 #include "functions.h"
-
 #include <iostream>
 
 
@@ -62,26 +61,51 @@ void Functions::Compute_E_and_M(mat &A, double &E, double &M){
   }
 }
 
-
-void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, bool WriteLog, string fileout){
-  ofstream ofile;
-
+void Functions::Stabilize(mat &spin_matrix, double Temp, int NumCycles){
   int NSpins = size(spin_matrix)[0] - 2;
-  vec ExpectationValues_log = zeros<mat>(5);
-  if (WriteLog || Temp == InitialTemp){
-    string argument = to_string(NSpins);
-    ofile.open(fileout + argument + "x" + argument + "_log.txt");
-    ofile << "#Info_len = 3\n#MCcycles " << MCcycles << "\n#Nspins = " << NSpins << "\n#Temp = " << Temp << endl;
-    ofile << setw(15) << setprecision(8) << "cycles";
-    ofile << setw(15) << setprecision(8) << "E";
-    ofile << setw(15) << setprecision(8) << "EE";
-    ofile << setw(15) << setprecision(8) << "M";
-    ofile << setw(15) << setprecision(8) << "MM";
-    ofile << setw(15) << setprecision(8) << "M_abs" << endl;
+  random_device rd;
+  mt19937_64 gen(rd());
+  uniform_real_distribution<double> RandomNumberGenerator(0.0, 1.0);
+
+  // Precalculate possible energy differences
+  vec EnergyDifference = zeros<vec>(17);
+  for (int de = -8; de <= 8; de+=4) EnergyDifference[de+8] = exp(-de/Temp);
+
+  for (int cycles = 1; cycles <= NumCycles; cycles++){
+    //Sweap over lattice for NSpins^2 random positions
+    for (int i = 0; i < NSpins*NSpins; i++){
+      int iy = 1 + (int) (RandomNumberGenerator(gen)*NSpins);
+      int ix = 1 + (int) (RandomNumberGenerator(gen)*NSpins);
+      //Find delta Energy
+      int deltaE = 2*spin_matrix(iy,ix)* (
+                     spin_matrix(iy+1,ix) +
+                     spin_matrix(iy-1,ix) +
+                     spin_matrix(iy,ix+1) +
+                     spin_matrix(iy,ix-1)  );
+      //Metropolis test
+      if (RandomNumberGenerator(gen) <= EnergyDifference[deltaE+8]) {
+        spin_matrix(iy,ix) *= -1; // Accept new config by flipping spin
+
+        // Update boundary conditions (ghost spin)
+        spin_matrix(0,ix) = spin_matrix(NSpins,ix);
+        spin_matrix(NSpins+1,ix) = spin_matrix(1,ix);
+        spin_matrix(iy,0) = spin_matrix(iy,NSpins);
+        spin_matrix(iy,NSpins+1) = spin_matrix(iy,1);
+      }
+    }
   }
+}
 
+void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp){
+  //Description of function
+  int NSpins = size(spin_matrix)[0] - 2;
 
-  // Initialize spin matrix, energy and magnetization
+  // Reach equilibrium (safety measure)
+  int equilibrium_cycles = MCcycles*0.01; //thrwow away first procent of cycles
+  Stabilize(spin_matrix, Temp, equilibrium_cycles);
+  MCcycles -= equilibrium_cycles;
+
+  // Initialize energy and magnetization
   double E = 0; double M = 0;
   Compute_E_and_M(spin_matrix, E, M);
 
@@ -95,9 +119,7 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
   uniform_real_distribution<double> RandomNumberGenerator(0.0, 1.0);
 
 
-  int accepted_flips = 0;
   // Perform Metropolis sampling
-
   for (int cycles = 1; cycles <= MCcycles; cycles++){
     //Sweap over lattice for NSpins^2 random positions
     for (int i = 0; i < NSpins*NSpins; i++){
@@ -112,7 +134,7 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
       //Metropolis test
       if (RandomNumberGenerator(gen) <= EnergyDifference[deltaE+8]) {
         spin_matrix(iy,ix) *= -1; // Accept new config by flipping spin
-        accepted_flips += 1;
+
 
         // Update boundary conditions (ghost spin)
         spin_matrix(0,ix) = spin_matrix(NSpins,ix);
@@ -126,41 +148,32 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
       }
     }
     // update expectation values for local node
-
-    WriteEnergyState(E, cycles, NSpins, Temp, fileout);
     ExpectationValues(0) += E;
     ExpectationValues(1) += E*E;
     ExpectationValues(2) += M;
     ExpectationValues(3) += M*M;
     ExpectationValues(4) += fabs(M);
-
-
-    if (WriteLog || Temp == InitialTemp){
-      ExpectationValues_log(0) += E;
-      ExpectationValues_log(1) += E*E;
-      ExpectationValues_log(2) += M;
-      ExpectationValues_log(3) += M*M;
-      ExpectationValues_log(4) += fabs(M);
-
-      double norm = 1.0/((double) (cycles));  // divided by  number of cycles
-      double E = ExpectationValues_log(0)*norm;
-      double EE = ExpectationValues_log(1)*norm;
-      double M = ExpectationValues_log(2)*norm;
-      double MM = ExpectationValues_log(3)*norm;
-      double M_abs = ExpectationValues_log(4)*norm;
-      ofile << setw(15) << setprecision(8) << cycles;
-      ofile << setw(15) << setprecision(8) << E;
-      ofile << setw(15) << setprecision(8) << EE;
-      ofile << setw(15) << setprecision(8) << M;
-      ofile << setw(15) << setprecision(8) << MM;
-      ofile << setw(15) << setprecision(8) << M_abs << endl;
-    }
   }
-  // WriteAcceptedFlips(accepted_flips, Temp, InitialTemp, MCcycles, NSpins, fileout);
 } // end of Metropolis sampling over spins
 
 
-void Functions::output(int MCcycles, double Temp, vec ExpectationValues, ofstream& ofile){
+void Functions::output(int MCcycles, double Temp, double InitialTemp, vec ExpectationValues, int NSpins, string fileout){
+  ofstream ofile;
+  string argument = to_string(NSpins);
+  string output_file = fileout + argument + "x" + argument + "_dump.txt";
+  if (Temp == InitialTemp){
+    ofile.open(output_file, ios::out);
+    ofile << setw(15) << setprecision(8) << "Temp";
+    ofile << setw(15) << setprecision(8) << "E";
+    ofile << setw(15) << setprecision(8) << "EE";
+    ofile << setw(15) << setprecision(8) << "M";
+    ofile << setw(15) << setprecision(8) << "MM";
+    ofile << setw(15) << setprecision(8) << "M_abs" << endl;
+  }
+  else {
+    ofile.open(output_file, ios::out | ios::app);
+  }
+
   double norm = 1.0/((double) (MCcycles));  // divided by  number of cycles
   double E = ExpectationValues(0)*norm;
   double EE = ExpectationValues(1)*norm;
@@ -176,40 +189,13 @@ void Functions::output(int MCcycles, double Temp, vec ExpectationValues, ofstrea
 } // end output function
 
 
-void Functions::WriteAcceptedFlips(int accepted_flips, double Temp, double InitialTemp, int MCcycles, int NSpins, string fileout){
-  ofstream outflip;
-  string output_file = fileout + "_flipped.txt";
-  if (Temp == InitialTemp){
-    outflip.open(output_file, ios::out);}
-  else{
-    outflip.open(output_file, ios::out | ios::app);
-  }
-  outflip << setw(15) << setprecision(8) << Temp;
-  outflip << setw(15) << setprecision(8) << float(accepted_flips)/MCcycles/NSpins/NSpins << endl;
-  outflip.close();
-}
 
-void Functions::WriteEnergyState(double E, int cycles, int NSpins, double Temp, string fileout){
-  ofstream outstate;
-  string output_file = fileout + "_EnergyStates.txt";
-  if (cycles == 1){
-    outstate.open(output_file, ios::out);
-    outstate << "Temp= " << Temp << endl;
-    outstate << "NSpins= " << NSpins << endl;
-  }
-  else{
-    outstate.open(output_file, ios::out | ios::app);
-  }
-  outstate << setw(15) << setprecision(8) << cycles;
-  outstate << setw(15) << setprecision(8) << E << endl;
-  outstate.close();
-}
+
 
 
 void Functions::LoadConfig(mat &A, string filename){
   string line;
   ifstream infile (filename);
-
 
   int n = size(A)[0];
   for (int j = 1; j < n-1; j++){

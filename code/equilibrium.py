@@ -20,7 +20,7 @@ def plot_equilibrium(filenames):
     # T = 2.4 unordered
 
 
-    #plt.figure(num=0, figsize=(10, 5), dpi=80, facecolor='w', edgecolor='k')
+
     for filename in filenames:
         Info, data = read_log(filename)
         MCcycles = Info[0]
