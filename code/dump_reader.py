@@ -16,6 +16,7 @@ matplotlib.rcParams['font.family'] = 'STIXGeneral'
 def read_dump(filename):
     data = []
     with open(filename, "r") as infile:
+        MCcyles = int(infile.readline().split()[1])
         variables = infile.readline().split()
         for line in infile:
             data.append(np.array(line.split()).astype(float))
@@ -25,7 +26,7 @@ def read_dump(filename):
     return Temp, E, EE, M, MM, M_abs
 
 def C_V(Temp, EE, E):
-    return (EE - E**2)/Temp
+    return (EE - E**2)/Temp**2
 
 def Chi(Temp, MM, M_abs):
     return (MM - M_abs**2)/Temp
@@ -44,7 +45,7 @@ def plot_results(Temp, E, EE, M, MM, M_abs, NSpins):
     plt.ylabel(r"$ \langle E \rangle $ $[J]$", fontsize=14)
 
     plt.subplot(232)
-    plt.plot(Temp, EE/NSpins**2, linestyle, label = "experimental")
+    plt.plot(Temp, EE/NSpins**4, linestyle, label = "experimental")
     plt.ylabel(r"$\langle E^2 \rangle$ $[J^2]$", fontsize=14)
 
     plt.subplot(233)
@@ -57,7 +58,7 @@ def plot_results(Temp, E, EE, M, MM, M_abs, NSpins):
     plt.ylabel(r"$\langle |M| \rangle$", fontsize=14)
 
     plt.subplot(235)
-    plt.plot(Temp, MM/NSpins**2, linestyle, label = "experimental")
+    plt.plot(Temp, MM/NSpins**4, linestyle, label = "experimental")
     plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
     plt.ylabel(r"$\langle M^2 \rangle$")
 

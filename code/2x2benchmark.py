@@ -51,8 +51,8 @@ def equlibrium_benchmark(Info, data):
     plt.xscale("log")
 
     plt.subplot(232)
-    plt.plot(Cycles, EE/4, linestyle, label = "experimental")
-    plt.hlines(EE_ana/4, 0, MCcycles, color = u'#A60628', linestyle = "--", label = "analytical")
+    plt.plot(Cycles, EE/4**2, linestyle, label = "experimental")
+    plt.hlines(EE_ana/4**2, 0, MCcycles, color = u'#A60628', linestyle = "--", label = "analytical")
     plt.ylabel(r"$\langle E^2 \rangle$ $[J^2]$", fontsize=14)
     plt.xscale("log")
 
@@ -70,8 +70,8 @@ def equlibrium_benchmark(Info, data):
     plt.xscale("log")
 
     plt.subplot(235)
-    plt.plot(Cycles, MM/4, linestyle, label = "experimental")
-    plt.hlines(MM_ana/4, 0, MCcycles, color = u'#A60628', linestyle = "--", label = "analytical")
+    plt.plot(Cycles, MM/4**2, linestyle, label = "experimental")
+    plt.hlines(MM_ana/4**2, 0, MCcycles, color = u'#A60628', linestyle = "--", label = "analytical")
     plt.xlabel("Cycles", fontsize = 14)
     plt.ylabel(r"$\langle M^2 \rangle$")
     plt.xscale("log")
@@ -105,8 +105,8 @@ def phase_benchmark(Temp, E, EE, M, MM, M_abs):
     plt.ylabel(r"$ \langle E \rangle $ $[J]$", fontsize=14)
 
     plt.subplot(232)
-    plt.plot(Temp, EE/4, linestyle, label = "experimental")
-    plt.plot(Temp, EE_ana/4, label = "analytical")
+    plt.plot(Temp, EE/4**2, linestyle, label = "experimental")
+    plt.plot(Temp, EE_ana/4**2, label = "analytical")
     plt.ylabel(r"$\langle E^2 \rangle$ $[J^2]$", fontsize=14)
 
     plt.subplot(233)
@@ -121,8 +121,8 @@ def phase_benchmark(Temp, E, EE, M, MM, M_abs):
     plt.ylabel(r"$\langle |M| \rangle$", fontsize=14)
 
     plt.subplot(235)
-    plt.plot(Temp, MM/4, linestyle, label = "experimental")
-    plt.plot(Temp, MM_ana/4, label = "analytical")
+    plt.plot(Temp, MM/4**2, linestyle, label = "experimental")
+    plt.plot(Temp, MM_ana/4**2, label = "analytical")
     plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
     plt.ylabel(r"$\langle M^2 \rangle$")
 
@@ -141,9 +141,9 @@ def phase_benchmark(Temp, E, EE, M, MM, M_abs):
 
 if __name__ == "__main__":
 
-    filename = "bm2x2_log.txt"
-    Info, data = read_log(filename)
-    equlibrium_benchmark(Info, data)
+    # filename = "bm2x2_log.txt"
+    # Info, data = read_log(filename)
+    # equlibrium_benchmark(Info, data)
 
     filename = "bm2x2_dump.txt"
     Temp, E, EE, M, MM, M_abs = read_dump(filename)

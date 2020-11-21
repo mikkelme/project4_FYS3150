@@ -96,12 +96,12 @@ void Functions::Stabilize(mat &spin_matrix, double Temp, int NumCycles){
   }
 }
 
-void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp){
+void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, double equilibrium_pct){
   //Description of function
   int NSpins = size(spin_matrix)[0] - 2;
 
   // Reach equilibrium (safety measure)
-  int equilibrium_cycles = MCcycles*0.01; //thrwow away first procent of cycles
+  int equilibrium_cycles = MCcycles*equilibrium_pct; //thrwow away first procent of cycles
   Stabilize(spin_matrix, Temp, equilibrium_cycles);
   MCcycles -= equilibrium_cycles;
 
@@ -163,6 +163,7 @@ void Functions::output(int MCcycles, double Temp, double InitialTemp, vec Expect
   string output_file = fileout + argument + "x" + argument + "_dump.txt";
   if (Temp == InitialTemp){
     ofile.open(output_file, ios::out);
+    ofile << "MCcycles= " << MCcycles << endl;
     ofile << setw(15) << setprecision(8) << "Temp";
     ofile << setw(15) << setprecision(8) << "E";
     ofile << setw(15) << setprecision(8) << "EE";
@@ -186,10 +187,20 @@ void Functions::output(int MCcycles, double Temp, double InitialTemp, vec Expect
   ofile << setw(15) << setprecision(8) << M;
   ofile << setw(15) << setprecision(8) << MM;
   ofile << setw(15) << setprecision(8) << M_abs << endl;
+  ofile.close();
 } // end output function
 
 
-
+void Functions::WriteTime(int NSpins, int MCcyles, double Temp, double timeused, string fileout){
+  ofstream ofile;
+  string output_file = fileout + "_timing.txt";
+  ofile.open(output_file, ios::out | ios::app);
+  ofile << setw(15) << setprecision(8) << NSpins*NSpins; //Total number of spins
+  ofile << setw(15) << setprecision(8) << MCcyles;
+  ofile << setw(15) << setprecision(8) << Temp;
+  ofile << setw(15) << setprecision(8) << timeused << endl;
+  ofile.close();
+}
 
 
 

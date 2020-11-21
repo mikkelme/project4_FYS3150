@@ -3,6 +3,7 @@
 #include <armadillo>
 #include <random>
 #include "functions.h"
+#include "time.h"
 using namespace std;
 using namespace arma;
 
@@ -51,30 +52,37 @@ int main(int argc, char* argv[]){
   MPI_Bcast(spin_matrix.begin(), spin_matrix.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 
+  double equilibrium_pct = 0.01;
+  clock_t start, finish; //Intialize clock for timing
   for (double Temp = InitialTemp; Temp <= FinalTemp; Temp+=TempStep){
+    if (my_rank == 0){ start = clock(); } //Start timer
 
     vec local_ExpectationValues = zeros<mat>(5);
     vec total_ExpectationValues = zeros<mat>(5);
-    func.MetropolisSampling(spin_matrix, MCcycles, Temp, local_ExpectationValues, InitialTemp);
-    MPI_Barrier(MPI_COMM_WORLD); //Make sure all nodes are done
+    func.MetropolisSampling(spin_matrix, MCcycles, Temp, local_ExpectationValues, InitialTemp, equilibrium_pct);
+
     for (int i = 0; i < 5; i++){ //Sum up results
       MPI_Reduce(&local_ExpectationValues(i), &total_ExpectationValues(i), 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
-    if (my_rank == 0){ //Let node 0 wrtie averaged result
-      total_ExpectationValues /= numprocs;
-      func.output(MCcycles, Temp, InitialTemp, total_ExpectationValues, NSpins, fileout);
-      cout << "\r" << "T = "<< Temp << "/" << FinalTemp << flush;
+
+    MPI_Barrier(MPI_COMM_WORLD); //Make sure all nodes are done
+    if (my_rank == 0){ //Let node 0 write averaged result
+      //Timing
+      finish = clock(); //End timer
+      double timeused = (double) (finish - start)/(CLOCKS_PER_SEC );
+      // func.WriteTime(NSpins, atoi(argv[3]), Temp, timeused, fileout);
+
+      //Write to file
+      func.output(numprocs*MCcycles*(1.0-equilibrium_pct), Temp, InitialTemp, total_ExpectationValues, NSpins, fileout);
+      cout << "\r" << "T = "<< Temp << "/" << FinalTemp << " Time used: " << timeused  << flush;
     }
   }
-  if (my_rank == 0){ //Let node 0 wrtie averaged result
+  if (my_rank == 0){
     cout << " "<<endl;
   }
 
 
   // func.SaveConfig(spin_matrix, fileout);
-
-
-
   MPI_Finalize (); // End MPI
 
 

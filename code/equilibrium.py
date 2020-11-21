@@ -14,13 +14,6 @@ matplotlib.rcParams['font.family'] = 'STIXGeneral'
 
 
 def plot_equilibrium(filenames):
-    # T = 1 ordered
-    # T = 1 unordered
-    # T = 2.4 ordered
-    # T = 2.4 unordered
-
-
-
     for filename in filenames:
         Info, data = read_log(filename)
         MCcycles = Info[0]
