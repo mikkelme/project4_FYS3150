@@ -12,10 +12,9 @@ from dump_reader import*
 
 
 def plot_phase(filenames):
-
     smooth = False
-    window_length = 47
-    polyorder = 3
+    window_length = 21
+    polyorder = 8
     for filename in filenames:
         Temp, E, EE, M, MM, M_abs = read_dump(filename)
         NSpins = int(filename.split("x")[1].split("_")[0])
@@ -67,6 +66,71 @@ def plot_phase(filenames):
     plt.show()
 
 
+def plot_fit(filenames):
+    smooth = True
+    window_length = 47
+    polyorder = 3
+    left_lim = 2.22
+    right_lim = 2.34
+    for filename in filenames:
+        Temp, E, EE, M, MM, M_abs = read_dump(filename)
+        NSpins = int(filename.split("x")[1].split("_")[0])
+        linestyle = "o"
+
+        figCV = plt.figure(num=1, dpi=80, facecolor='w', edgecolor='k')
+        plotCV = plt.plot(Temp, C_V(Temp, EE, E)/NSpins**2, linestyle, alpha = 0.5, label = f"L = {NSpins}")
+        plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
+        plt.ylabel(r"$C_V$ $[k_B]$", fontsize=14)
+        plt.plot(Temp, smooth_curve(C_V(Temp, EE, E)/NSpins**2, window_length, polyorder), alpha = 1, color = plotCV[0].get_color())
+        plt.tight_layout(pad=1.1, w_pad=0.7, h_pad=0.2)
+        plt.xlim([left_lim, right_lim])
+        plt.legend(loc = "best", fontsize = 13)
+
+        figCHI = plt.figure(num=3, dpi=80, facecolor='w', edgecolor='k')
+        plotCHI = plt.plot(Temp, Chi(Temp, MM, M_abs)/NSpins**2, linestyle, alpha = 0.5, label = f"L = {NSpins}")
+        plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
+        plt.ylabel("$\chi$ $[k_B^{-1}]$")
+        plt.plot(Temp, smooth_curve(Chi(Temp, MM, M_abs)/NSpins**2, window_length, polyorder), alpha = 1, color = plotCHI[0].get_color())
+        plt.tight_layout(pad=1.1, w_pad=0.7, h_pad=0.2)
+        plt.legend(loc = "best", fontsize = 13)
+        plt.xlim([left_lim, right_lim])
+
+
+    plt.show()
+def plot_phase_subplot(filenames):
+    for filename in filenames:
+        Temp, E, EE, M, MM, M_abs = read_dump(filename)
+        NSpins = int(filename.split("x")[1].split("_")[0])
+        linestyle = "o"
+
+        plt.figure(num=0, figsize=(10, 7), dpi=80, facecolor='w', edgecolor='k')
+
+        plt.subplot(221)
+        plotE = plt.plot(Temp, E/NSpins**2, linestyle)
+        plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
+        plt.ylabel(r"$ \langle E \rangle $ $[J]$", fontsize=14)
+
+        plt.subplot(222)
+        plotCV = plt.plot(Temp, C_V(Temp, EE, E)/NSpins**2, linestyle, color = plotE[0].get_color())
+        plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
+        plt.ylabel(r"$C_V$ $[k_B]$", fontsize=14)
+
+        plt.subplot(223)
+        plotM = plt.plot(Temp, M_abs/NSpins**2, linestyle, color = plotE[0].get_color())
+        plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
+        plt.ylabel(r"$\langle |M| \rangle$", fontsize=14)
+
+        plt.subplot(224)
+        plotCHI = plt.plot(Temp, Chi(Temp, MM, M_abs)/NSpins**2, linestyle, color = plotE[0].get_color(), label = f"L = {NSpins}")
+        plt.xlabel(r"$T$ $[k_B/J]$", fontsize=14)
+        plt.ylabel("$\chi$ $[k_B^{-1}]$")
+
+    plt.legend(loc = "best", fontsize = 13)
+    plt.tight_layout(pad=1.1, w_pad=0.7, h_pad=0.2)
+    #plt.savefig("../../article/figures/phase_subplot.pdf", bbox_inches="tight")
+    plt.show()
+
+
 def smooth_curve(input, window_length = 47, polyorder = 3):
 
     output = signal.savgol_filter(input, window_length, polyorder)
@@ -89,9 +153,12 @@ def findTc(filenames):
         max_idx_C_V = np.argmax(smooth_curve(C_V_array))
         max_idx_Chi = np.argmax(smooth_curve(Chi_array))
 
+        # max_idx_C_V = np.argmax(C_V_array)
+        # max_idx_Chi = np.argmax(Chi_array)
         T_numerical[i,0] = Temp[max_idx_C_V]
         T_numerical[i,1] = Temp[max_idx_Chi]
         L_reci[i] = 1/NSpins
+
 
 
 
@@ -110,8 +177,8 @@ def findTc(filenames):
 
         b, a = res.params
         b_err, a_err = res.bse
-        #print(value_list[j])
-        #print("a = %g\na_err = %g\nb = %g\nb_err = %g\n" %(a, a_err, b, b_err))
+        print(value_list[j])
+        print("a = %g\na_err = %g\nb = %g\nb_err = %g\n" %(a, a_err, b, b_err))
         b_arr[j] = b
         b_err_arr[j] = b_err
 
@@ -136,9 +203,9 @@ def findTc(filenames):
     ax.add_artist(leg1)
     ax.add_artist(leg0)
     plt.xlabel("1/L", fontsize = 14)
-    plt.ylabel(r"$T_C$ $[k_B/J]$")
+    plt.ylabel(r"$T$ $[k_B/J]$")
     plt.tight_layout(pad=1.1, w_pad=0.7, h_pad=0.2)
-    #plt.savefig("../../article/figures/findTc.pdf", bbox_inches="tight")
+    plt.savefig("../../article/figures/findTc.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -156,5 +223,7 @@ if __name__ == "__main__":
                     "final80x80_dump.txt",
                     "final100x100_dump.txt"]
 
-    plot_phase(filenames)
+    #plot_phase_subplot(filenames)
+    #plot_phase(filenames)
+    #plot_fit(filenames)
     findTc(filenames)

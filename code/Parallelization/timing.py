@@ -92,7 +92,6 @@ def PlotResults(names):
 
         plt.figure(num=var_idx, dpi=80, facecolor='w', edgecolor='k')
         plotTime = plt.plot(list[var_idx], list[-1], "o", label = label)
-
         if var_idx != 2:
             y = list[-1]
             x = list[var_idx]
@@ -102,45 +101,27 @@ def PlotResults(names):
             b, a = res.params
             b_err, a_err = res.bse
             plt.plot(x, x*a + b, "--", alpha = 0.7, color = plotTime[0].get_color())
-
-        # if var_idx != 2:
-        #     y = list[-1]
-        #     x = list[var_idx]
-        #     if var_idx == 1:
-        #         # y = np.log(y)
-        #         # x = np.log(x)
-        #         x = sm.add_constant(x)
-        #         model = sm.OLS(y, x)
-        #         res = model.fit()
-        #         b, a = res.params
-        #         b_err, a_err = res.bse
-        #         plt.plot(x, x*a + b, "--", alpha = 0.7, color = plotTime[0].get_color())
-        #         #plt.plot(np.exp(x), np.exp(x*a + b), "--", alpha = 0.7, color = plotTime[0].get_color())
-        #     else:
-        #         x = sm.add_constant(x)
-        #         model = sm.OLS(y, x)
-        #         res = model.fit()
-        #         b, a = res.params
-        #         b_err, a_err = res.bse
-        #         plt.plot(x, x*a + b, "--", alpha = 0.7, color = plotTime[0].get_color())
+            print(var_idx, label, a, b)
+        else:
+            if name[-1] == "1":
+                p_not = list[-1]
+            elif name[-1] == "4":
+                p = list[-1]
 
 
-        print(var_idx, label, a, b)
+
+
         plt.xlabel(varname[var_idx], fontsize = 14)
         plt.ylabel("Time used [s]", fontsize = 14)
-        # if var_idx == 1:
-        #     plt.xscale("log")
-        #     plt.yscale("log")
-        #     plt.xlim(left = 50)
-        #     plt.ylim(bottom = 0.00025)
-
         plt.tight_layout(pad=1.1, w_pad=0.7, h_pad=0.2)
         plt.legend(loc = "best", fontsize = 13)
 
     figname = ["tmSpins", "tmMCcycles", "tmTemp"]
     for i in range(3):
         plt.figure(num=i, dpi=80, facecolor='w', edgecolor='k')
-        plt.savefig("../../article/figures/" + figname[i] + ".pdf", bbox_inches="tight")
+        #plt.savefig("../../article/figures/" + figname[i] + ".pdf", bbox_inches="tight")
+
+    print(np.mean(p_not/p))
 
 
 
