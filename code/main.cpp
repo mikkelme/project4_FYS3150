@@ -8,7 +8,6 @@ using namespace arma;
 ofstream ofile;
 
 
-//J = 1; k = 1
 int main(int argc, char* argv[]){
   Functions func;
 

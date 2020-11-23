@@ -4,8 +4,6 @@
 
 
 
-
-
 void Functions::ShowMatrix(mat &A){
   // Prints matrix A
   int nj = size(A)[0];
@@ -64,6 +62,7 @@ void Functions::Compute_E_and_M(mat &A, double &E, double &M){
 
 
 void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, bool WriteLog, string fileout){
+  // Runs Metropolis for given number of MC cycles
   ofstream ofile;
 
   int NSpins = size(spin_matrix)[0] - 2;
@@ -126,7 +125,6 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
       }
     }
     // update expectation values for local node
-
     WriteEnergyState(E, cycles, NSpins, Temp, fileout);
     ExpectationValues(0) += E;
     ExpectationValues(1) += E*E;
@@ -135,6 +133,7 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
     ExpectationValues(4) += fabs(M);
 
 
+    // Write log (values for each cycle)
     if (WriteLog || Temp == InitialTemp){
       ExpectationValues_log(0) += E;
       ExpectationValues_log(1) += E*E;

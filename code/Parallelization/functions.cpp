@@ -97,7 +97,7 @@ void Functions::Stabilize(mat &spin_matrix, double Temp, int NumCycles){
 }
 
 void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, vec &ExpectationValues, double InitialTemp, double equilibrium_pct){
-  //Description of function
+  // Runs Metropolis for given number of MC cycles
   int NSpins = size(spin_matrix)[0] - 2;
 
   // Reach equilibrium (safety measure)

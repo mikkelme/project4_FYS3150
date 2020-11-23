@@ -9,15 +9,13 @@ using namespace arma;
 
 ofstream ofile;
 
-
-//J = 1; k = 1
 int main(int argc, char* argv[]){
   Functions func;
   string fileout;
   int NSpins, MCcycles;
   double InitialTemp, FinalTemp, TempStep;
 
-  //   MPI initializations
+  //  MPI initializations
   int numprocs, my_rank;
   MPI_Init (&argc, &argv);
   MPI_Comm_size (MPI_COMM_WORLD, &numprocs); //total number of processors
