@@ -1,6 +1,7 @@
 # FYS 3150 - Project 4
 This repository contains the work of Fredrik Hoftun and Mikkel Metzsch Jensen for project 4 in Computational Physics FYS3150. 
-....
+
+The repository is divided into two folders: article and code. In the article folder we have the article it self and all the figures included in it. In the code folder we have the 
 ...
 
 To use the compiler just type `make` in the commandline in the `/code` directory.
