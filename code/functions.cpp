@@ -35,7 +35,6 @@ void Functions::DefaultConfig(mat &A, double &Temp){
   }
 
   BoundaryConditions(A);
-
 }
 
 void Functions::BoundaryConditions(mat &A){
@@ -155,7 +154,7 @@ void Functions::MetropolisSampling(mat &spin_matrix, int MCcycles, double Temp, 
       ofile << setw(15) << setprecision(8) << M_abs << endl;
     }
   }
-  // WriteAcceptedFlips(accepted_flips, Temp, InitialTemp, MCcycles, NSpins, fileout);
+  WriteAcceptedFlips(accepted_flips, Temp, InitialTemp, MCcycles, NSpins, fileout);
 } // end of Metropolis sampling over spins
 
 

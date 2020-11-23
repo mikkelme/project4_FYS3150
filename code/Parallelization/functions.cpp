@@ -3,8 +3,6 @@
 
 
 
-
-
 void Functions::ShowMatrix(mat &A){
   // Prints matrix A
   int nj = size(A)[0];
